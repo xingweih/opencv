@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <vector>
 
 using namespace cv;
 using namespace std;
@@ -22,12 +23,8 @@ int main(int arvc, char **argv)
 
 	cout << test(24, 24) << endl;
 
-	int count = 0;
-	for(int ii = 1; ii <= 12; ii++)
-		for(int jj = 1; jj <= 24; jj++)
-			count += (25-jj) * (25-2*ii);
-	cout << count << endl;
 	int x, y, w, h;
+	int count = 0;
 	int sat[24][24] = { {0} };
 	int rsat[24][24] = { {0} };
 
@@ -58,21 +55,48 @@ int main(int arvc, char **argv)
 		}
 	//rotation = 0
 	count = 0;
-	for (h = 1; h <= height; h++)
-		for (w = 1; w <= width / 2; w++)
-			for (y = 0; y < height + 1 - h; y++)
-				for (x = 0; x < width + 1 - 2 * w; x++)
+	vector<int> feature;
+	for(x = 0; x < width; x++)
+		for(y = 0; y < height; y++)
+			for(w = 2; w <= width; w++)
+				for(h = 2; h <= height; h++)
 				{
 					//1a
-					if(x == 1 && y == 1 && w == 2 && h == 2)
+					if((x + 2 * w <= width) && (y + h <= height))
 					{
 						int left = getHaarValue(sat, x, y, w, h, 0);
 						int right = getHaarValue(sat, x + w, y, w, h, 0);
 						int res = left - right;
+						feature.push_back(res);
 					}
-					count ++;
+					//1b
+					if((x + w <= width) && (y + 2 * h <= height))
+					{
+						int up = getHaarValue(sat, x, y, w, h, 0);
+						int down = getHaarValue(sat, x, y + h, w, h, 0);
+						int res = up - down;
+						feature.push_back(res);
+					}
+					//2a
+					if((x + 3 * w <= width) && (y + h <= height))
+					{
+						int left = getHaarValue(sat, x, y, w, h, 0);
+						int mid = getHaarValue(sat, x + w, y, w, h, 0);
+						int right = getHaarValue(sat, x + 2 * w, y, w, h, 0);
+						int res = left - 2 * mid + right;
+						feature.push_back(res);
+					}
+					//2c
+					if((x + w <= width) && (y + 3 * h <= height))
+					{
+						int up = getHaarValue(sat, x, y, w, h, 0);
+						int mid = getHaarValue(sat, x, y + h, w, h, 0);
+						int down = getHaarValue(sat, x, y + 2 * h, w, h, 0);
+						int res = up - 2 * mid + down;
+						feature.push_back(res);
+					}
 				}
-				cout << count << endl;
+				cout << "feature number: " << feature.size() << endl;
 	//compute rsat
 	for (y = 0; y < height; y++)
 		for (x = 0; x < width; x++)
@@ -183,14 +207,14 @@ int test(int W, int H)
 						count++;
 						*/
 	//1a, 1b
-	/*
+	///*
 	for(x = 0; x < W; x++)
 		for(y = 0; y < H; y++)
-			for(w = 1; w <= W; w++)
-				for(h = 1; h <= H; h++)
+			for(w = 2; w <= W; w++)
+				for(h = 2; h <= H; h++)
 					if((x + 2 * w <= W) && (y + h <= H))
 						count++;
-						*/
+						//*/
 	//1c, 1d
 	/*
 	for(x = 0; x < W; x++)
@@ -228,7 +252,7 @@ int test(int W, int H)
 						count++;
 						*/
 	//2f, 2h
-	///*
+	/*
 	for(x = 0; x < W; x++)
 		for(y = 0; y < H; y++)
 			for(w = 2; w <= W; w++)
@@ -236,6 +260,6 @@ int test(int W, int H)
 					if((x - 4 * h + 1 >= 0) && (x + w - 1 < W) && (y + 4 * h + w - 2 < H))
 					//if((x - 4 * h >= 0) && (x + w <= W) && (y + 4 * h + w <= H))
 						count++;
-		//				*/
+						*/
 	return count;
 }
