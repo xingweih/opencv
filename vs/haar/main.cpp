@@ -5,28 +5,55 @@
 #include <fstream>
 #include <iomanip>
 #include <vector>
+#include "inc.h"
 
 using namespace cv;
 using namespace std;
-
-int getHaarValue(const int sat[][24], int x, int y, int w, int h, int type);
-int getHaarCount(int W, int H, int w, int h);
-int test(int W, int H);
-typedef unsigned char uchar;
 
 int main(int arvc, char **argv)
 {
 	const int width = 24;
 	const int height = 24;
-	Mat image = imread("lena.jpg");
-	//imshow("xxx", image);
-
-	cout << test(24, 24) << endl;
-
 	int x, y, w, h;
 	int count = 0;
 	int sat[24][24] = { {0} };
 	int rsat[24][24] = { {0} };
+	//test adaboost
+	int i;
+	feature fea;
+	classfier *clf;
+	int numOfWeakClassfier = 10;
+	int * &featureData = fea.featureData; 
+	int * &label = fea.label;
+
+	featureData = (int *)malloc(width * height * sizeof(int));
+	label = (int *)malloc(height * sizeof(int));
+	clf = (classfier *)malloc(numOfWeakClassfier * sizeof(classfier));
+
+	for(i = 0; i < width * height; i++)
+		*(featureData + i) = rand() % 100;
+	for(i = 0; i < width * height; i++)
+	{
+		if(rand() % 2 == 1)
+			*(label + i) = 1;
+		else
+			*(label + i) = -1;
+	}
+	fea.numOfData = height;
+	fea.numOfFeature = width;
+
+	adaboostTrain(fea, clf, numOfWeakClassfier);
+
+	free(featureData);
+	free(label);
+	featureData = NULL;
+	label = NULL;
+
+
+	Mat image = imread("lena.jpg");
+	//imshow("xxx", image);
+
+	cout << test(24, 24) << endl;
 
 	ofstream fout;
 	fout.open("data_original.txt", ios::trunc);
