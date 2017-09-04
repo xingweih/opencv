@@ -19,4 +19,4 @@ int getHaarCount(int W, int H, int w, int h);
 int test(int W, int H);
 void adaboostTrain(const feature fea, classfier *clf, int numOfWeakClassfier);
 void weakClassfier(const feature fea, float *weight, classfier &clf);
-int ababoostDetect(int *fea, classfier *clf, int numOfWeakClassfier);
+int ababoostDetect(int *feaData, classfier *clf, int numOfWeakClassfier);

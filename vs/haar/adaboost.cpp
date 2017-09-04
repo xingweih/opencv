@@ -10,7 +10,8 @@ void adaboostTrain(const feature fea, classfier *clf, int numOfWeakClassfier)
 {
 	int numOfData = fea.numOfData;
 	int i;
-	int *tmp = (int *)malloc(2 * sizeof(int));
+	int *tmp;
+	tmp = (int *)malloc(2 * sizeof(int));
 	float *weight = (float *)malloc(numOfData * sizeof(float));
 
 	for(i = 0; i < numOfData; i++)
@@ -58,15 +59,15 @@ void weakClassfier(const feature fea, float *weight, classfier &clf)
 		int stepSize = (max - min) / numOfSplit;
 		for(i = 0; i < numOfSplit; i++)
 		{
-			int threshTmp = min + i * stepSize;//different value for classfication
+			int threshTmp = min + i * stepSize + stepSize / 2;//different value for classfication
 			error = 0;
 			for(j = 0; j < numOfData; j++)
 			{
 				labelTmp[j] = 0;
 				if((*(featureData + j * numOfFeature + col) <= threshTmp) &&
-				   (*(label + j * numOfFeature + col) == 1) || 
+				   (*(label + j) == 1) || 
 				   (*(featureData + j * numOfFeature + col) > threshTmp) &&
-				   (*(label + j * numOfFeature + col) == -1) )
+				   (*(label + j) == -1) )
 				{
 					error += (*(weight + j));
 					labelTmp[j] = 1;
@@ -78,7 +79,11 @@ void weakClassfier(const feature fea, float *weight, classfier &clf)
 				thresh = threshTmp;
 				featureSel = col;
 			}
+			if(errorMin < 1e-3)//error is small enough. Break current feature
+				break;
 		}
+		if(errorMin < 1e-4)//error is small enough. Break all features
+			break;
 	}
 	alpha = 0.5f * log((1 - errorMin) / errorMin);
 	for(i = 0; i < numOfData; i++)
@@ -93,7 +98,7 @@ void weakClassfier(const feature fea, float *weight, classfier &clf)
 	free(labelTmp);
 }
 
-int ababoostDetect(int *fea, classfier *clf, int numOfWeakClassfier)
+int ababoostDetect(int *feaData, classfier *clf, int numOfWeakClassfier)
 {
 	classfier clfTmp;
 	float alpha;
@@ -107,7 +112,7 @@ int ababoostDetect(int *fea, classfier *clf, int numOfWeakClassfier)
 		alpha = clfTmp.alpha;
 		featureSel = clfTmp.featureSel;
 		thresh = clfTmp.thresh;
-		if(*(fea + featureSel) <= thresh)//prediction result is -1
+		if(*(feaData + featureSel) <= thresh)//prediction result is -1
 			pred -= alpha;
 		else//prediction result is 1
 			pred += alpha;

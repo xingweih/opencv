@@ -31,18 +31,26 @@ int main(int arvc, char **argv)
 	clf = (classfier *)malloc(numOfWeakClassfier * sizeof(classfier));
 
 	for(i = 0; i < width * height; i++)
-		*(featureData + i) = rand() % 100;
-	for(i = 0; i < width * height; i++)
+		*(featureData + i) = i;
+	for(i = 0; i < height; i++)
 	{
-		if(rand() % 2 == 1)
+		if(i % 3 == 0)
 			*(label + i) = 1;
 		else
 			*(label + i) = -1;
 	}
 	fea.numOfData = height;
 	fea.numOfFeature = width;
-
 	adaboostTrain(fea, clf, numOfWeakClassfier);
+	//detect
+	int *detectData = (int *)malloc(width * sizeof(int));
+	for(i = 0; i < height; i++)
+	{
+		for(int j = 0; j < width; j++)
+			*(detectData + j) = *(featureData + i * width + j);
+		int res = ababoostDetect(detectData, clf, numOfWeakClassfier);
+		cout << res << endl;
+	}
 
 	free(featureData);
 	free(label);
